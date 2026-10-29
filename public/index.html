@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="no">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Seansen</title>
+  <style>
+    :root { --bg: #16121c; --flate: #221b2b; --tekst: #eee8f4; --dempet: #9a8fa8; --oransje: #ff8a1f; }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--tekst); font: 16px/1.5 system-ui, sans-serif; }
+    main { max-width: 760px; margin: 0 auto; padding: 48px 16px; }
+    h1 { margin: 0 0 4px; font-size: 2rem; }
+    p.ingress { margin: 0 0 24px; color: var(--dempet); }
+    textarea { width: 100%; min-height: 110px; padding: 12px; border: 1px solid #3a3045; border-radius: 8px;
+               background: var(--flate); color: var(--tekst); font: inherit; resize: vertical; }
+    textarea:focus { outline: 2px solid var(--oransje); outline-offset: 1px; }
+    button { margin-top: 12px; padding: 10px 20px; border: 0; border-radius: 8px; background: var(--oransje);
+             color: #1a1208; font: inherit; font-weight: 600; cursor: pointer; }
+    button:disabled { opacity: .5; cursor: wait; }
+    #svar { margin-top: 32px; padding: 20px 24px; border-radius: 8px; background: var(--flate); overflow-wrap: anywhere; }
+    #svar:empty { display: none; }
+    #svar.venter { color: var(--dempet); }
+    #svar.feil { color: #ff7b7b; }
+    #svar > :first-child { margin-top: 0; }
+    #svar > :last-child { margin-bottom: 0; }
+    #svar h1, #svar h2, #svar h3 { margin: 1.6em 0 .5em; line-height: 1.25; }
+    #svar h1 { font-size: 1.4rem; }
+    #svar h2 { font-size: 1.2rem; }
+    #svar h3 { font-size: 1.05rem; }
+    #svar strong { color: #fff; }
+    #svar ul, #svar ol { padding-left: 1.4em; }
+    #svar li { margin: .2em 0; }
+    #svar a { color: var(--oransje); }
+    #svar hr { border: 0; border-top: 1px solid #3a3045; margin: 1.5em 0; }
+    #svar code { padding: 1px 5px; border-radius: 4px; background: #2e2538; font-size: .9em; }
+    #svar blockquote { margin: 1em 0; padding-left: 12px; border-left: 3px solid var(--oransje); color: var(--dempet); }
+    #svar .tabell { overflow-x: auto; }
+    #svar table { border-collapse: collapse; margin: 1em 0; font-size: .93em; }
+    #svar th, #svar td { padding: 6px 10px; border-bottom: 1px solid #3a3045; text-align: left; vertical-align: top; }
+    #svar th { color: var(--dempet); font-weight: 600; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>🎃 Seansen</h1>
+    <p class="ingress">Hvem kan ta oppdraget? Beskriv behovet, så leter agenten blant konsulentene.</p>
+    <form id="skjema">
+      <textarea id="oppgave" placeholder="Vi trenger en React-utvikler i Bergen fra desember" required></textarea>
+      <button type="submit">Spør</button>
+    </form>
+    <div id="svar" aria-live="polite"></div>
+  </main>
+  <script>
+    const skjema = document.getElementById('skjema');
+    const oppgave = document.getElementById('oppgave');
+    const knapp = skjema.querySelector('button');
+    const svar = document.getElementById('svar');
+
+    skjema.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      knapp.disabled = true;
+      knapp.textContent = 'Leter …';
+      svar.className = 'venter';
+      svar.textContent = 'Agenten søker. Det kan ta et minutt.';
+      try {
+        const res = await fetch('/api/spor', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ oppgave: oppgave.value }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.feil ?? `Feil ${res.status}`);
+        // Serveren har allerede escapet rå HTML fra agenten.
+        svar.className = '';
+        svar.innerHTML = data.html;
+        // Brede tabeller får scrolle for seg selv i stedet for å sprenge siden.
+        for (const t of svar.querySelectorAll('table')) {
+          const boks = document.createElement('div');
+          boks.className = 'tabell';
+          t.replaceWith(boks);
+          boks.append(t);
+        }
+      } catch (err) {
+        svar.className = 'feil';
+        svar.textContent = err.message;
+      } finally {
+        knapp.disabled = false;
+        knapp.textContent = 'Spør';
+      }
+    });
+
+    // Ctrl/Cmd+Enter sender.
+    oppgave.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) skjema.requestSubmit();
+    });
+  </script>
+</body>
+</html>
