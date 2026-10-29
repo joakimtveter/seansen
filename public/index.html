@@ -5,22 +5,47 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Seansen</title>
   <style>
-    :root { --bg: #16121c; --flate: #221b2b; --tekst: #eee8f4; --dempet: #9a8fa8; --oransje: #ff8a1f; }
+    :root { --bg: #16121c; --flate: #221b2b; --kant: #3a3045; --tekst: #eee8f4; --dempet: #9a8fa8;
+            --oransje: #ff8a1f; --grønn: #7bd88f; --rød: #ff7b7b; --lilla: #b79cff; }
     * { box-sizing: border-box; }
     body { margin: 0; background: var(--bg); color: var(--tekst); font: 16px/1.5 system-ui, sans-serif; }
     main { max-width: 760px; margin: 0 auto; padding: 48px 16px; }
     h1 { margin: 0 0 4px; font-size: 2rem; }
     p.ingress { margin: 0 0 24px; color: var(--dempet); }
-    textarea { width: 100%; min-height: 110px; padding: 12px; border: 1px solid #3a3045; border-radius: 8px;
+    textarea { width: 100%; min-height: 110px; padding: 12px; border: 1px solid var(--kant); border-radius: 8px;
                background: var(--flate); color: var(--tekst); font: inherit; resize: vertical; }
     textarea:focus { outline: 2px solid var(--oransje); outline-offset: 1px; }
     button { margin-top: 12px; padding: 10px 20px; border: 0; border-radius: 8px; background: var(--oransje);
              color: #1a1208; font: inherit; font-weight: 600; cursor: pointer; }
     button:disabled { opacity: .5; cursor: wait; }
-    #svar { margin-top: 32px; padding: 20px 24px; border-radius: 8px; background: var(--flate); overflow-wrap: anywhere; }
+
+    /* Arbeidsloggen: det agenten gjør, live */
+    #arbeid { margin-top: 32px; border: 1px solid var(--kant); border-radius: 8px; }
+    #arbeid summary { padding: 12px 16px; cursor: pointer; color: var(--dempet); font-size: .93rem;
+                      display: flex; justify-content: space-between; gap: 12px; }
+    #arbeid summary::-webkit-details-marker { display: none; }
+    #arbeid summary::after { content: '▾'; }
+    #arbeid:not([open]) summary::after { content: '▸'; }
+    #tid { margin-left: auto; font-variant-numeric: tabular-nums; }
+    #logg { list-style: none; margin: 0; padding: 0 16px 12px; font-size: .93rem; }
+    #logg li { display: flex; gap: 10px; align-items: baseline; padding: 4px 0; animation: inn .25s ease-out; }
+    #logg .ikon { flex: none; width: 14px; text-align: center; }
+    #logg .detalj { margin-left: auto; padding-left: 12px; color: var(--dempet); white-space: nowrap; }
+    #logg .tanke { color: var(--dempet); font-style: italic; }
+    #logg .ferdig .ikon { color: var(--grønn); }
+    #logg .feil .ikon, #logg .feil .detalj { color: var(--rød); }
+    #logg .feil .detalj { white-space: normal; }
+    #logg .advarsel .detalj { color: var(--oransje); font-weight: 600; }
+    #logg .avvik .detalj { color: var(--lilla); font-weight: 600; }
+    #logg .venter .ikon::before { content: ''; display: inline-block; width: 10px; height: 10px;
+                                  border: 2px solid var(--oransje); border-right-color: transparent;
+                                  border-radius: 50%; animation: snurr .8s linear infinite; }
+    @keyframes snurr { to { transform: rotate(360deg); } }
+    @keyframes inn { from { opacity: 0; transform: translateY(-3px); } }
+
+    #svar { margin-top: 16px; padding: 20px 24px; border-radius: 8px; background: var(--flate); overflow-wrap: anywhere; }
     #svar:empty { display: none; }
-    #svar.venter { color: var(--dempet); }
-    #svar.feil { color: #ff7b7b; }
+    #svar.feil { color: var(--rød); }
     #svar > :first-child { margin-top: 0; }
     #svar > :last-child { margin-bottom: 0; }
     #svar h1, #svar h2, #svar h3 { margin: 1.6em 0 .5em; line-height: 1.25; }
@@ -31,13 +56,18 @@
     #svar ul, #svar ol { padding-left: 1.4em; }
     #svar li { margin: .2em 0; }
     #svar a { color: var(--oransje); }
-    #svar hr { border: 0; border-top: 1px solid #3a3045; margin: 1.5em 0; }
+    #svar hr { border: 0; border-top: 1px solid var(--kant); margin: 1.5em 0; }
     #svar code { padding: 1px 5px; border-radius: 4px; background: #2e2538; font-size: .9em; }
     #svar blockquote { margin: 1em 0; padding-left: 12px; border-left: 3px solid var(--oransje); color: var(--dempet); }
     #svar .tabell { overflow-x: auto; }
     #svar table { border-collapse: collapse; margin: 1em 0; font-size: .93em; }
-    #svar th, #svar td { padding: 6px 10px; border-bottom: 1px solid #3a3045; text-align: left; vertical-align: top; }
+    #svar th, #svar td { padding: 6px 10px; border-bottom: 1px solid var(--kant); text-align: left; vertical-align: top; }
     #svar th { color: var(--dempet); font-weight: 600; }
+    #svar .manipulasjon, #svar .avvik { list-style: none; margin: .5em 0 .5em -1.4em; padding: 8px 12px; border-radius: 6px;
+                                        border-left: 3px solid var(--oransje); background: rgba(255, 138, 31, .1); }
+    #svar .avvik { border-left-color: var(--lilla); background: rgba(183, 156, 255, .09); }
+    #svar .avvik ul { margin: .3em 0 0; }
+    #svar .avvik-ingen { color: var(--dempet); }
   </style>
 </head>
 <body>
@@ -48,31 +78,82 @@
       <textarea id="oppgave" placeholder="Vi trenger en React-utvikler i Bergen fra desember" required></textarea>
       <button type="submit">Spør</button>
     </form>
+    <details id="arbeid" open hidden>
+      <summary><span id="status"></span><span id="tid"></span></summary>
+      <ol id="logg" aria-live="polite"></ol>
+    </details>
     <div id="svar" aria-live="polite"></div>
   </main>
   <script>
     const skjema = document.getElementById('skjema');
     const oppgave = document.getElementById('oppgave');
     const knapp = skjema.querySelector('button');
+    const arbeid = document.getElementById('arbeid');
+    const status = document.getElementById('status');
+    const tid = document.getElementById('tid');
+    const logg = document.getElementById('logg');
     const svar = document.getElementById('svar');
 
-    skjema.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      knapp.disabled = true;
-      knapp.textContent = 'Leter …';
-      svar.className = 'venter';
-      svar.textContent = 'Agenten søker. Det kan ta et minutt.';
-      try {
-        const res = await fetch('/api/spor', {
-          method: 'POST',
-          headers: { 'content-type': 'application/json' },
-          body: JSON.stringify({ oppgave: oppgave.value }),
-        });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.feil ?? `Feil ${res.status}`);
+    // Hvordan hvert verktøykall vises i loggen. p er navnene på konsulentene i kallet.
+    const etiketter = {
+      sok_kompetanse: (i) => `Søker etter «${i.ferdighet}»` + (i.lokasjon ? ` i ${i.lokasjon}` : '')
+        + (i.min_niva > 1 ? `, nivå ${i.min_niva}+` : ''),
+      sjekk_tilgjengelighet: (i, p) => `Sjekker om ${p} er ledig`,
+      hent_cv: (i, p) => `Leser CV-en til ${p}`,
+      finn_prosjekthistorikk: (i, p) => `Henter prosjekthistorikken til ${p}`,
+      kryssjekk_kilder: (i, p) => `Kryssjekker profil, CV og prosjekter for ${p}`,
+    };
+
+    const personliste = (navn = []) => navn.length > 3
+      ? `${navn.slice(0, 3).join(', ')} og ${navn.length - 3} til`
+      : navn.join(', ').replace(/, ([^,]*)$/, ' og $1');
+
+    // Kort oppsummering av et verktøyresultat, f.eks. «12 treff» eller «Ingen CV for k041».
+    function oppsummer(innhold) {
+      if (/^<cv[^>]*advarsel=/.test(innhold)) return '⚠ skjult tekst i CV-en';
+      let data;
+      try { data = JSON.parse(innhold); } catch {
+        return innhold.startsWith('Ingen') ? innhold.split('.')[0] : '';
+      }
+      if (data.avvik) return data.avvik.length ? `🔍 ${data.avvik.length} avvik` : 'ingen avvik';
+      if (data.antall_treff != null) return `${data.antall_treff} treff`;
+      if (data.prosjekter) return `${data.prosjekter.length} prosjekter`;
+      if (data.ukjente_ider) return `ukjent: ${data.ukjente_ider.join(', ')}`;
+      return '';
+    }
+
+    function steg(klasse, tekst, detalj = '') {
+      const li = document.createElement('li');
+      li.className = klasse;
+      li.innerHTML = '<span class="ikon"></span><span class="tekst"></span><span class="detalj"></span>';
+      li.querySelector('.tekst').textContent = tekst;
+      li.querySelector('.detalj').textContent = detalj;
+      return li;
+    }
+
+    let tenker, kall, antallSteg, start, klokke;
+
+    function håndter(h) {
+      if (h.type === 'tanke') {
+        logg.insertBefore(steg('tanke', h.tekst), tenker);
+      } else if (h.type === 'kall') {
+        const etikett = etiketter[h.verktøy]?.(h.input, personliste(h.personer)) ?? `Kaller ${h.verktøy}`;
+        const li = steg('venter', etikett);
+        kall.set(h.id, li);
+        logg.insertBefore(li, tenker);
+        antallSteg++;
+      } else if (h.type === 'resultat') {
+        const li = kall.get(h.id);
+        if (!li) return;
+        li.className = h.feil ? 'feil' : 'ferdig';
+        li.querySelector('.ikon').textContent = h.feil ? '✗' : '✓';
+        li.querySelector('.detalj').textContent = h.feil ? h.innhold : oppsummer(h.innhold);
+        const detalj = li.querySelector('.detalj').textContent;
+        if (detalj.startsWith('⚠')) li.classList.add('advarsel');
+        if (detalj.startsWith('🔍')) li.classList.add('avvik');
+      } else if (h.type === 'svar') {
         // Serveren har allerede escapet rå HTML fra agenten.
-        svar.className = '';
-        svar.innerHTML = data.html;
+        svar.innerHTML = h.html;
         // Brede tabeller får scrolle for seg selv i stedet for å sprenge siden.
         for (const t of svar.querySelectorAll('table')) {
           const boks = document.createElement('div');
@@ -80,10 +161,69 @@
           t.replaceWith(boks);
           boks.append(t);
         }
+        // Systemprompten ber agenten starte slike linjer med «⚠️ Mulig manipulasjon:»
+        // og «🔍 Avvik:». Endres prefiksene der, må de endres her også.
+        for (const el of svar.querySelectorAll('li, p')) {
+          const tekst = el.textContent.trimStart();
+          if (tekst.startsWith('⚠️ Mulig manipulasjon')) el.classList.add('manipulasjon');
+          if (tekst.startsWith('🔍 Avvik')) el.classList.add(/^🔍 Avvik:\s*ingen/i.test(tekst) ? 'avvik-ingen' : 'avvik');
+        }
+      } else if (h.type === 'feil') {
+        throw new Error(h.melding);
+      }
+    }
+
+    // Leser NDJSON-strømmen linje for linje etter hvert som den kommer.
+    async function lesHendelser(res) {
+      const leser = res.body.pipeThrough(new TextDecoderStream()).getReader();
+      let rest = '';
+      for (;;) {
+        const { value, done } = await leser.read();
+        if (done) break;
+        const linjer = (rest + value).split('\n');
+        rest = linjer.pop();
+        for (const linje of linjer) if (linje.trim()) håndter(JSON.parse(linje));
+      }
+    }
+
+    const sekunder = () => Math.round((Date.now() - start) / 1000);
+
+    skjema.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      knapp.disabled = true;
+      knapp.textContent = 'Leter …';
+      svar.className = '';
+      svar.textContent = '';
+      logg.textContent = '';
+      tenker = steg('venter tanke', 'Agenten tenker …');
+      logg.append(tenker);
+      kall = new Map();
+      antallSteg = 0;
+      start = Date.now();
+      status.textContent = 'Agenten jobber';
+      tid.textContent = '0 s';
+      klokke = setInterval(() => { tid.textContent = `${sekunder()} s`; }, 1000);
+      arbeid.hidden = false;
+      arbeid.open = true;
+      try {
+        const res = await fetch('/api/spor', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ oppgave: oppgave.value }),
+        });
+        if (!res.ok) throw new Error((await res.json()).feil ?? `Feil ${res.status}`);
+        await lesHendelser(res);
+        if (!svar.innerHTML) throw new Error('Forbindelsen ble brutt før agenten var ferdig.');
+        status.textContent = `Slik fant agenten svaret · ${antallSteg} oppslag`;
+        arbeid.open = false;
       } catch (err) {
+        status.textContent = 'Agenten stoppet';
         svar.className = 'feil';
         svar.textContent = err.message;
       } finally {
+        clearInterval(klokke);
+        tid.textContent = `${sekunder()} s`;
+        tenker.remove();
         knapp.disabled = false;
         knapp.textContent = 'Spør';
       }

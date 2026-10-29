@@ -2,3 +2,4 @@
 2) responses should show on the page formated as HTML
 3) The app Should have a login form, where only @capgemini.com emails let you through password does not matter.
 4) the returned canidates should have a check box nex to their name. checked names should create a one page that is downloaded.
+5) make sure the web does not close after the first

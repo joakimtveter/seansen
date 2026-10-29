@@ -13,7 +13,9 @@ const grå = (t) => `\x1b[90m${t}\x1b[0m`;
 const oransje = (t) => `\x1b[38;5;208m${t}\x1b[0m`;
 const grønn = (t) => `\x1b[32m${t}\x1b[0m`;
 
-export async function kjørAgent({ system, oppgave, verktøy }) {
+// påHendelse får hvert steg underveis (tanke, kall, resultat), så nettsiden kan
+// vise arbeidet live. Terminalen logger som før uansett.
+export async function kjørAgent({ system, oppgave, verktøy, påHendelse = () => {} }) {
   // Bare verktøy med en kjør-funksjon sendes til modellen. Stubbene i
   // verktoy.js blir med av seg selv når dere implementerer dem.
   const aktive = verktøy.filter((v) => v.kjør);
@@ -36,6 +38,7 @@ export async function kjørAgent({ system, oppgave, verktøy }) {
     for (const blokk of svar.content) {
       if (blokk.type === 'text' && blokk.text.trim()) {
         console.log(svar.stop_reason === 'tool_use' ? grå(blokk.text) : blokk.text);
+        if (svar.stop_reason === 'tool_use') påHendelse({ type: 'tanke', tekst: blokk.text });
       }
     }
 
@@ -55,7 +58,10 @@ export async function kjørAgent({ system, oppgave, verktøy }) {
     const resultater = [];
     for (const k of kall) {
       console.log(oransje(`→ ${k.name}`) + grå(` ${JSON.stringify(k.input)}`));
-      resultater.push(await kjørVerktøy(etterNavn, k));
+      påHendelse({ type: 'kall', id: k.id, verktøy: k.name, input: k.input });
+      const resultat = await kjørVerktøy(etterNavn, k);
+      påHendelse({ type: 'resultat', id: k.id, innhold: resultat.content, feil: !!resultat.is_error });
+      resultater.push(resultat);
     }
     messages.push({ role: 'user', content: resultater });
   }

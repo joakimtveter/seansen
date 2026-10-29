@@ -5,7 +5,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { Marked } from 'marked';
 import { kjørAgent } from './agent.js';
-import { system, verktøy } from './verktoy.js';
+import { system, verktøy, konsulenter } from './verktoy.js';
 
 if (!process.env.ANTHROPIC_API_KEY) {
   console.error('Mangler ANTHROPIC_API_KEY. Kopier .env.example til .env og lim inn nøkkelen.');
@@ -25,9 +25,7 @@ const server = http.createServer(async (req, res) => {
       const { oppgave } = JSON.parse(await lesKropp(req));
       if (typeof oppgave !== 'string' || !oppgave.trim()) return svarJson(res, 400, { feil: 'Skriv et spørsmål først.' });
       console.log(`\n🎃 ${oppgave}\n`);
-      const svar = await kjørAgent({ system, oppgave, verktøy });
-      const tekst = tekstFra(svar);
-      return svarJson(res, 200, { svar: tekst, html: markdown.parse(tekst) });
+      return strømAgent(res, oppgave);
     }
     svarJson(res, 404, { feil: 'Finnes ikke.' });
   } catch (e) {
@@ -52,6 +50,30 @@ const markdown = new Marked({
     },
   },
 });
+
+// Svaret strømmes som NDJSON: én JSON-hendelse per linje mens agenten jobber
+// (tanke, kall, resultat), og til slutt «svar» eller «feil».
+async function strømAgent(res, oppgave) {
+  res.writeHead(200, { 'content-type': 'application/x-ndjson; charset=utf-8', 'cache-control': 'no-cache' });
+  const send = (hendelse) => res.write(`${JSON.stringify(hendelse)}\n`);
+  try {
+    const svar = await kjørAgent({ system, oppgave, verktøy, påHendelse: (h) => send(medNavn(h)) });
+    const tekst = tekstFra(svar);
+    send({ type: 'svar', svar: tekst, html: markdown.parse(tekst) });
+  } catch (e) {
+    console.error(e);
+    send({ type: 'feil', melding: e.message });
+  }
+  res.end();
+}
+
+// Siden viser «Leser CV-en til Sander Myrlys» i stedet for «hent_cv k079».
+const navnPåId = new Map(konsulenter.map((k) => [k.id, k.navn]));
+function medNavn(h) {
+  if (h.type !== 'kall') return h;
+  const ider = [h.input.id, ...(Array.isArray(h.input.ider) ? h.input.ider : [])].filter(Boolean);
+  return { ...h, personer: ider.map((id) => navnPåId.get(id) ?? String(id)) };
+}
 
 // kjørAgent returnerer ingenting når den stopper på MAX_ITERASJONER.
 function tekstFra(svar) {

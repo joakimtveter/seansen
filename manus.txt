@@ -1,0 +1,96 @@
+MANUS: SEANSEN (5 MINUTTER)
+
+Ved normalt taletempo er 5 minutter omtrent 650-750 ord. Totalt under: omtrent 690 ord.
+Narrasjonen i beat 1-3 må justeres etter første opptak, siden modellen kan formulere seg litt ulikt hver gang.
+
+
+----------------------------------------------------------------------
+0:00-0:30  PROBLEMET (ca. 70 ord)
+Skjerm: tittelskjerm «Seansen».
+----------------------------------------------------------------------
+
+«Tenk deg at et nytt prosjekt trenger folk, og at det haster.
+Da starter leting. Først går noen gjennom profilene for å se hvem som kan teknologien.
+Så leser de CV-er, så sjekker de kalenderen for å se hvem som er ledig,
+og til slutt går de gjennom prosjekthistorikken for å finne ut hvem som faktisk har brukt ferdigheten i et oppdrag.
+ Dataene ligger på flere steder, og de stemmer ikke alltid med hverandre.
+ Dette rammer dem som har ansvaret for å bemanne prosjektene.»
+
+
+----------------------------------------------------------------------
+0:30-1:00  LØSNINGEN (ca. 70 ord)
+Skjerm: tittelskjerm, eller en tom chat klar til bruk.
+----------------------------------------------------------------------
+
+«Seansen er en agent som svarer på spørsmålet "hvem kan ta denne jobben?".
+Du skriver behovet med dine egne ord, slik du ville sagt det til en kollega.
+Agenten bruker så verktøy direkte på dataene i stedet for å gjette.
+Det som skiller den fra en vanlig chatbot, er at den sier fra når ingen passer.
+Den fyller ikke opp listen med folk som nesten passer, og den finner aldri på personer.»
+
+
+----------------------------------------------------------------------
+1:00-3:30  LIVE-DEMO (ca. 330 ord)
+Skjerm: terminalen i stor skrift, med verktøykallene synlige.
+----------------------------------------------------------------------
+
+INTRO (ca. 25 ord)
+
+«Jeg viser tre spørsmål på rad, i samme samtale. Legg merke til de oransje linjene underveis: de viser hvilke verktøy agenten bruker og med hvilke filtre.»
+
+
+BEAT 1: KUNDEN FINNES IKKE (ca. 50 sek)
+
+Skriv: 4 utviklere med C# og Azure til et energiprosjekt, helst folk som har jobbet for AkerBP.
+
+«Vi ber om fire utviklere med C# og Azure, og de skal helst ha jobbet for AkerBP. Se på verktøykallet: agenten gjør ikke et fritekstsøk, den lager et strukturert søk på ferdigheter og bransje. Nå kommer svaret. AkerBP finnes ikke i dataene våre, og det sier agenten tydelig. Den foreslår i stedet å se på energibransjen, som er det nærmeste. Så forteller den hvor mange som faktisk traff. Det er svært få som har både C# og Azure. Agenten ber oss heller lempe på kravet enn å fylle på med navn som ikke passer.»
+
+
+BEAT 2: RANGERT LISTE (ca. 50 sek)
+
+Skriv: Terraform og Azure, ledig fra november, C-grad eller over.
+
+«Nå et helt nytt behov: Terraform og Azure, ledig fra november, og grad C eller høyere. Her får vi en rangert liste. For hver person ser vi hvorfor vedkommende passer, hvilket nivå de har, og når de er ledige. Noen er bare delvis ledige, og det står i listen. Rangeringen er regnet ut i kode ut fra nivå, prosjekterfaring og tilgjengelighet. Den er ikke noe språkmodellen har funnet på. Derfor kan vi kontrollere den.»
+
+
+BEAT 3: OPPFØLGING OG AVVIK (ca. 50 sek)
+
+Skriv: Sjekk den beste mot CV-en.
+
+«Så en oppfølging: "sjekk den beste mot CV-en". Jeg trenger ikke gjenta hva vi lette etter, for samtalen husker listen. Agenten henter CV-en og sammenligner med profilen. Se her: CV-en nevner en ferdighet som ikke står i kompetanseprofilen. Dataene har innebygde uoverensstemmelser, og agenten sier fra om dem i stedet for å skjule dem. For den som bemanner, er det nettopp slike avvik man vil vite om før man lover noe til en kunde.»
+
+Merknad: Hvis agenten henter en annen person enn Ingrid Gravstø, tilpass beat 3 til avviket den faktisk finner (CV-en til Ingrid nevner AKS, som ikke står i profilen hennes). Rehearser mot modellen først.
+
+
+----------------------------------------------------------------------
+3:30-4:15  HVORDAN DET ER BYGGET (ca. 100 ord)
+Skjerm: arkitekturbildet: chat -> agent -> verktøy -> data.
+----------------------------------------------------------------------
+
+«Slik er det bygget. Agenten har seks verktøy. Det viktigste filtrerer og rangerer på alle krav samtidig. De andre sjekker tilgjengelighet, henter CV, søker i prosjekthistorikken og søker på enkeltferdigheter. Det viktigste designvalget er arbeidsdelingen. Språkmodellen forstår behovet og forklarer svaret, mens koden filtrerer, teller og sjekker datoer. Derfor er svarene kontrollerbare. Agenten anbefaler, men et menneske bestemmer hvem som faktisk bemannes. Vi bruker ingen vektordatabase. Dataene er små og strukturerte, og da er faste filtre mer pålitelige enn søk på likhet, som lett gir treff som nesten passer.»
+
+
+----------------------------------------------------------------------
+4:15-4:45  VERDI OG LÆRING (ca. 75 ord)
+Skjerm: tre punkter.
+----------------------------------------------------------------------
+
+«Hva fungerte? Agenten sier "3 av 10" når det bare finnes tre, og hvert verktøykall er synlig, så man kan se hvordan svaret ble til. Hva fungerte ikke først? Agenten tolket et tall feil og antydet at ekstra treff kunne ha beslektede ferdigheter. Vi rettet verktøyet, slik at det sier tydelig hva tallet betyr. Vi mangler fortsatt automatiske tester, og dataene er syntetiske. Hvis vi skulle begynt på nytt, hadde vi bygget testscenarioene først.»
+
+
+----------------------------------------------------------------------
+4:45-5:00  AVSLUTNING (ca. 45 ord)
+Skjerm: tittelskjerm.
+----------------------------------------------------------------------
+
+«Neste steg er et web-grensesnitt med kandidatkort og verktøysporet ved siden av, og teamsammensetning, for de gangene behovet er "vi trenger et helt team". Seansen kan brukes av alle som bemanner prosjekter ut fra profiler, CV-er og kalendere. Takk for oppmerksomheten.»
+
+
+----------------------------------------------------------------------
+FØR OPPTAKET
+----------------------------------------------------------------------
+
+- Les manus høyt med stoppeklokke. Kutt eller legg til i demo-intro hvis du ligger mer enn 10 sekunder unna 5:00.
+- Rehearser beat 1-3 mot modellen. Bare Java-scenarioet i Stavanger er kjørt så langt.
+- Vis ikke .env, key.txt eller notapikey.txt på skjermen.
+- Få noen til å lese gjennom manus og video før de deles utenfor teamet. Teksten er KI-generert og må kvalitetssikres.
